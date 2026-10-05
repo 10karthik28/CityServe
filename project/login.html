@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CityServe</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 70px - 85px);
+            padding: 2rem;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="nav-brand">
+                <svg style="width: 24px; height: 24px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                    </path>
+                </svg>
+                CityServe
+            </a>
+            <div class="nav-links">
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="request_service.html" class="nav-link">Request Service</a>
+                <a href="check_status.html" class="nav-link">Check Status</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content login-wrapper">
+        <div class="card login-card animate-fade-in">
+            <div class="text-center mb-4">
+                <h2 style="font-size: 1.75rem; margin-bottom: 0.5rem;">Welcome Back</h2>
+                <p style="margin-bottom: 0;">Sign in to your account</p>
+            </div>
+
+            <form action="dashboard.html" method="GET">
+                <div class="form-group">
+                    <label class="form-label" for="username">Email Address or Username</label>
+                    <input type="text" id="username" name="username" class="form-control" required
+                        placeholder="name@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required
+                        placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" style="accent-color: var(--primary-color);"> Remember me
+                    </label>
+                    <a href="#" style="color: var(--primary-color);">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 0.75rem; font-size: 1rem;">Sign In</button>
+            </form>
+
+            <div class="text-center mt-4">
+                <p style="font-size: 0.875rem; margin-bottom: 0;">Don't have an account? <a href="#">Register here</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Municipal Service Request Management System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

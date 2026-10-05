@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Service - CityServe</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .request-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            margin-top: 0.5rem;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/home.html" class="nav-brand">
+                <svg style="width: 24px; height: 24px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                    </path>
+                </svg>
+                Kerala CityServe
+            </a>
+            <div class="nav-links">
+                <a href="/home.html" class="nav-link">Home</a>
+                <a href="/request_service.html" class="nav-link active">Request Service</a>
+                <a href="/check_status.html" class="nav-link">Check Status</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container request-wrapper">
+            <div class="text-center mb-4 animate-fade-in">
+                <h2>Submit a Service Request</h2>
+                <p>Please provide accurate details to help our teams resolve the issue faster.</p>
+            </div>
+
+            <div class="card animate-fade-in" style="animation-delay: 0.1s;">
+                <form id="requestForm">
+                    <div class="form-group">
+                        <label class="form-label" for="type">Service Type</label>
+                        <select id="type" name="type" class="form-control" required
+                            style="appearance: none; background-image: url('data:image/svg+xml;utf8,<svg fill=\'%238b949e\' height=\'24\' viewBox=\'0 0 24 24\' width=\'24\' xmlns=\'http://www.w3.org/2000/svg\'><path d=\'M7 10l5 5 5-5z\'/><path d=\'M0 0h24v24H0z\' fill=\'none\'/></svg>'); background-repeat: no-repeat; background-position-x: 98%; background-position-y: 50%;">
+                            <option value="" disabled selected>Select an issue category...</option>
+                            <option value="Water Supply">Water Supply (Kerala Water Authority)</option>
+                            <option value="Waste Management">Waste Management (Waste Management Corporation)</option>
+                            <option value="Street Lighting">Street Lighting (Kerala State Electricity Board)</option>
+                            <option value="Road Maintenance">Road Maintenance (Public Works Department)</option>
+                            <option value="Sanitation">Sanitation (Municipality)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location (Ernakulam District)</label>
+                        <p style="font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Search for
+                            a place or click on the map to pinpoint the issue location.</p>
+                        <input type="hidden" id="location" name="location" required>
+                        <input type="hidden" id="lat" name="lat">
+                        <input type="hidden" id="lng" name="lng">
+                        <div style="display:flex; gap:.5rem; margin-bottom:.5rem;">
+                            <input type="text" id="placeSearch" class="form-control"
+                                placeholder="Search place in Ernakulam... e.g. Kakkanad, Fort Kochi" style="flex:1;">
+                            <button type="button" id="searchPlaceBtn" class="btn btn-secondary"
+                                style="white-space:nowrap; padding:.5rem 1rem;">Search</button>
+                        </div>
+                        <div id="searchResults"
+                            style="display:none; max-height:150px; overflow-y:auto; border:1px solid var(--border-color); border-radius:6px; margin-bottom:.5rem; background:var(--surface-color);">
+                        </div>
+                        <input type="text" id="locationDisplay" class="form-control" readonly
+                            placeholder="Select a location on the map below..."
+                            style="margin-bottom: 0.5rem; background-color: var(--surface-color);">
+                        <div id="map"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">Detailed Description</label>
+                        <textarea id="description" name="description" class="form-control" required
+                            placeholder="Describe the issue in detail..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Attach Photos (Optional)</label>
+                        <input type="file" id="imageFile" accept="image/*" style="display:none;"
+                            onchange="document.getElementById('fileName').textContent = this.files[0] ? this.files[0].name : 'No file chosen'">
+                        <div onclick="document.getElementById('imageFile').click()"
+                            style="border: 2px dashed var(--border-color); border-radius: 6px; padding: 2rem; text-align: center; cursor: pointer; transition: all 0.2s; background-color: var(--bg-color);"
+                            onmouseover="this.style.borderColor='var(--primary-color)'; this.style.backgroundColor='rgba(59, 130, 246, 0.05)';"
+                            onmouseout="this.style.borderColor='var(--border-color)'; this.style.backgroundColor='var(--bg-color)';">
+                            <svg style="width: 32px; height: 32px; color: var(--text-secondary); margin: 0 auto 0.5rem;"
+                                fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                </path>
+                            </svg>
+                            <p style="margin-bottom: 0.25rem; font-weight: 500;">Click to upload or drag and drop</p>
+                            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.5rem;">PNG,
+                                JPG, up to 5MB</p>
+                            <span id="fileName"
+                                style="font-size: 0.85rem; font-weight: 600; color: var(--primary-color);"></span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary"
+                            style="width: 100%; padding: 0.75rem; font-size: 1rem;">Submit Request</button>
+                        <p id="requestError"
+                            style="display:none;color:var(--danger);font-size:.875rem;margin-top:.75rem;text-align:center;">
+                        </p>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            const EKM_CENTER = [10.0, 76.31];
+            const EKM_BOUNDS = L.latLngBounds(
+                [9.75, 76.05],
+                [10.30, 76.60]
+            );
+
+            const map = L.map('map', {
+                center: EKM_CENTER,
+                zoom: 11,
+                minZoom: 10,
+                maxZoom: 18,
+                maxBounds: EKM_BOUNDS,
+                maxBoundsViscosity: 1.0
+            });
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            let marker;
+
+            const setLocation = (lat, lng, displayName) => {
+                if (marker) map.removeLayer(marker);
+                marker = L.marker([lat, lng]).addTo(map);
+                map.setView([lat, lng], 14);
+
+                document.getElementById('lat').value = lat.toFixed(6);
+                document.getElementById('lng').value = lng.toFixed(6);
+                document.getElementById('location').value = displayName;
+                document.getElementById('locationDisplay').value = displayName;
+            };
+
+            map.on('click', async (e) => {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+
+                setLocation(lat, lng, `Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`);
+
+                try {
+                    const res = await fetch(
+                        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1&zoom=16`,
+                        { headers: { 'Accept-Language': 'en' } }
+                    );
+                    const data = await res.json();
+                    if (data && data.display_name) {
+                        const short = data.display_name.split(',').slice(0, 3).join(',').trim();
+                        setLocation(lat, lng, short);
+                    }
+                } catch { /* keep the coordinate string */ }
+            });
+
+            const searchInput = document.getElementById('placeSearch');
+            const searchBtn = document.getElementById('searchPlaceBtn');
+            const resultsDiv = document.getElementById('searchResults');
+
+            const doSearch = async () => {
+                const q = searchInput.value.trim();
+                if (!q) return;
+
+                resultsDiv.innerHTML = '<p style="padding:.75rem;color:var(--text-secondary);font-size:.85rem;">Searching...</p>';
+                resultsDiv.style.display = 'block';
+
+                try {
+                    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q + ', Ernakulam, Kerala')}&format=json&addressdetails=1&limit=5&viewbox=76.05,9.75,76.60,10.30&bounded=1`;
+                    const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+                    const results = await res.json();
+
+                    if (!results.length) {
+                        resultsDiv.innerHTML = '<p style="padding:.75rem;color:var(--text-secondary);font-size:.85rem;">No results found in Ernakulam district.</p>';
+                        return;
+                    }
+
+                    resultsDiv.innerHTML = results.map((r, i) => {
+                        const name = r.display_name.split(',').slice(0, 3).join(',').trim();
+                        return `<div class="search-result" data-lat="${r.lat}" data-lng="${r.lon}" data-name="${name}"
+                                     style="padding:.6rem .75rem; cursor:pointer; font-size:.85rem; border-bottom:1px solid var(--border-color); transition:background .15s;"
+                                     onmouseover="this.style.background='var(--surface-hover)'" onmouseout="this.style.background='none'">
+                                    ${name}
+                                </div>`;
+                    }).join('');
+
+                    resultsDiv.querySelectorAll('.search-result').forEach(el => {
+                        el.addEventListener('click', () => {
+                            setLocation(parseFloat(el.dataset.lat), parseFloat(el.dataset.lng), el.dataset.name);
+                            resultsDiv.style.display = 'none';
+                            searchInput.value = el.dataset.name;
+                        });
+                    });
+                } catch {
+                    resultsDiv.innerHTML = '<p style="padding:.75rem;color:var(--danger);font-size:.85rem;">Search failed. Try again.</p>';
+                }
+            };
+
+            searchBtn.addEventListener('click', doSearch);
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); doSearch(); }
+            });
+
+            setTimeout(() => { map.invalidateSize(); }, 200);
+        });
+    </script>
+</body>
+
+</html>

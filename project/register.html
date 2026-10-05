@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CityServe</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 70px - 85px);
+            padding: 2rem;
+            background: radial-gradient(circle at top right, var(--surface-hover), var(--bg-color));
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 2rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/" class="nav-brand">
+                <svg style="width:28px;height:28px;color:var(--primary-color);" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Kerala CityServe
+            </a>
+            <div class="nav-links"></div>
+        </div>
+    </nav>
+
+    <main class="main-content login-wrapper">
+        <div class="card login-card animate-fade-in">
+            <div class="text-center mb-4">
+                <h1 style="font-size:1.75rem;margin-bottom:.5rem;">Create Account</h1>
+                <p style="margin-bottom:0;">Join CityServe to report civic issues</p>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label class="form-label" for="fullname">Full Name</label>
+                    <input type="text" id="fullname" class="form-control" required placeholder="e.g. Rahul Menon">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="regEmail">Email Address</label>
+                    <input type="email" id="regEmail" class="form-control" required placeholder="name@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="phone">Phone Number</label>
+                    <input type="tel" id="phone" class="form-control" placeholder="e.g. 9876543210"
+                        pattern="[1-9]{1}[0-9]{9}">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" class="form-control" required
+                        placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width:100%;padding:.875rem;font-size:1rem;font-weight:600;">Create Account</button>
+                <p id="registerError"
+                    style="display:none;color:var(--danger);font-size:.875rem;margin-top:.75rem;text-align:center;"></p>
+            </form>
+
+            <div class="text-center mt-4">
+                <p style="font-size:.875rem;margin-bottom:0;">Already have an account? <a href="/">Sign in here</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

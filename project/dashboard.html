@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard - CityServe</title>
+    <meta name="description" content="View your personal service request statistics and activity summary on CityServe.">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .kpi-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            transition: transform .18s, box-shadow .18s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .18);
+        }
+
+        .kpi-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .kpi-label {
+            font-size: .8rem;
+            color: var(--text-secondary);
+            margin-bottom: .3rem;
+        }
+
+        .kpi-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        /* Status distribution bar */
+        .dist-bar-wrap {
+            height: 12px;
+            background: var(--bg-color);
+            border-radius: 6px;
+            overflow: hidden;
+            display: flex;
+            margin-bottom: .75rem;
+        }
+
+        .dist-seg {
+            height: 100%;
+            transition: width .6s ease;
+        }
+
+        .legend-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .75rem 1.5rem;
+            font-size: .8rem;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: .35rem;
+            flex-shrink: 0;
+        }
+
+        /* Recent activity feed */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: .75rem;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .9rem;
+            padding: .85rem 1rem;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            font-size: .875rem;
+        }
+
+        .activity-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: .3rem;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 640px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/home.html" class="nav-brand">
+                <svg style="width: 24px; height: 24px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                    </path>
+                </svg>
+                Kerala CityServe
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link active">My Dashboard</a>
+                <a href="/check_status.html" class="nav-link">My Requests</a>
+                <a href="/request_service.html" class="nav-link">New Request</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container animate-fade-in">
+            <!-- Header -->
+            <div
+                style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:2.5rem;flex-wrap:wrap;gap:1rem;">
+                <div>
+                    <h2 style="margin-bottom:.25rem;" id="dashGreeting">My Dashboard</h2>
+                    <p style="margin-bottom:0;color:var(--text-secondary);">Your personal activity report &amp; service
+                        request summary.</p>
+                </div>
+                <a href="request_service.html" class="btn btn-primary" id="newReqBtn">
+                    <svg style="width:16px;height:16px;margin-right:.5rem;" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    New Request
+                </a>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="kpi-grid" id="kpiGrid">
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(59,130,246,.12);color:var(--primary-color);">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Total Requests</p>
+                        <p class="kpi-value" id="kpiTotal">—</p>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(245,158,11,.12);color:var(--warning);">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Pending</p>
+                        <p class="kpi-value" id="kpiPending">—</p>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(139,92,246,.12);color:#a78bfa;">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Assigned</p>
+                        <p class="kpi-value" id="kpiAssigned">—</p>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(34,197,94,.12);color:var(--success);">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Work Done</p>
+                        <p class="kpi-value" id="kpiDone">—</p>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(239,68,68,.12);color:var(--danger);">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Feedbacks Given</p>
+                        <p class="kpi-value" id="kpiFeedback">—</p>
+                    </div>
+                </div>
+
+                <div class="kpi-card">
+                    <div class="kpi-icon" style="background:rgba(20,184,166,.12);color:#14b8a6;">
+                        <svg style="width:26px;height:26px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="kpi-label">Resolution Rate</p>
+                        <p class="kpi-value" id="kpiRate">—</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-column section -->
+            <div class="grid-2" style="margin-bottom:2.5rem;">
+                <!-- Status Distribution -->
+                <div class="card">
+                    <p class="section-title">Status Distribution</p>
+                    <div class="dist-bar-wrap" id="distBar">
+                        <div class="dist-seg" id="segDone" style="background:var(--success);width:0%;"></div>
+                        <div class="dist-seg" id="segOngoing" style="background:var(--primary-color);width:0%;"></div>
+                        <div class="dist-seg" id="segAssigned" style="background:#a78bfa;width:0%;"></div>
+                        <div class="dist-seg" id="segRequested" style="background:var(--warning);width:0%;"></div>
+                    </div>
+                    <div class="legend-row" id="distLegend">
+                        <span><span class="legend-dot" style="background:var(--success);"></span>Work Done (<span
+                                id="lgDone">0</span>)</span>
+                        <span><span class="legend-dot" style="background:var(--primary-color);"></span>Ongoing (<span
+                                id="lgOngoing">0</span>)</span>
+                        <span><span class="legend-dot" style="background:#a78bfa;"></span>Assigned (<span
+                                id="lgAssigned">0</span>)</span>
+                        <span><span class="legend-dot" style="background:var(--warning);"></span>Requested (<span
+                                id="lgRequested">0</span>)</span>
+                    </div>
+                </div>
+
+                <!-- Category Breakdown -->
+                <div class="card">
+                    <p class="section-title">Requests by Category</p>
+                    <div id="catBreakdown" style="font-size:.875rem;display:flex;flex-direction:column;gap:.5rem;">
+                        <p style="color:var(--text-secondary);">Loading…</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card" style="margin-bottom:2rem;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+                    <p class="section-title" style="margin-bottom:0;">Recent Activity <span
+                            style="font-size:.75rem;color:var(--text-secondary);font-weight:400;text-transform:none;letter-spacing:0;">(last
+                            5 requests)</span></p>
+                    <a href="/check_status.html" class="btn btn-outline"
+                        style="padding:.3rem .8rem;font-size:.78rem;">View All</a>
+                </div>
+                <div class="activity-feed" id="activityFeed">
+                    <p style="color:var(--text-secondary);">Loading…</p>
+                </div>
+            </div>
+
+            <!-- Empty state placeholder (hidden by default) -->
+            <div id="emptyState" style="display:none;text-align:center;padding:3rem;">
+                <svg style="width:56px;height:56px;color:var(--text-secondary);margin:0 auto 1rem;" fill="none"
+                    stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                <h3>No Requests Yet</h3>
+                <p style="color:var(--text-secondary);margin-bottom:1.5rem;">You haven't submitted any service requests.
+                    Report your first issue now.</p>
+                <a href="/request_service.html" class="btn btn-primary">Report an Issue</a>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await requireAuth(['user']);
+            if (!user) return;
+            updateNavbarAuth();
+
+            document.getElementById('dashGreeting').textContent = `Welcome, ${user.name.split(' ')[0]}`;
+
+            try {
+                const { issues } = await api('/api/issues');
+
+                if (issues.length === 0) {
+                    document.getElementById('kpiGrid').style.display = 'none';
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.querySelector('.grid-2').style.display = 'none';
+                    document.querySelector('.card:last-of-type').style.display = 'none';
+                    return;
+                }
+
+                const total = issues.length;
+                const done = issues.filter(i => i.status === 'Work done').length;
+                const assigned = issues.filter(i => i.status === 'Assigned personnel').length;
+                const ongoing = issues.filter(i => i.status === 'Work on going').length;
+                const requested = issues.filter(i => i.status === 'Requested to the authority').length;
+                const pending = total - done;
+                const withFeedback = issues.filter(i => i.has_feedback).length;
+                const rate = total > 0 ? Math.round((done / total) * 100) + '%' : '—';
+
+                document.getElementById('kpiTotal').textContent = total;
+                document.getElementById('kpiPending').textContent = pending;
+                document.getElementById('kpiAssigned').textContent = assigned;
+                document.getElementById('kpiDone').textContent = done;
+                document.getElementById('kpiFeedback').textContent = withFeedback;
+                document.getElementById('kpiRate').textContent = rate;
+
+                // Distribution bar
+                const pct = (n) => total > 0 ? (n / total * 100).toFixed(1) + '%' : '0%';
+                document.getElementById('segDone').style.width = pct(done);
+                document.getElementById('segOngoing').style.width = pct(ongoing);
+                document.getElementById('segAssigned').style.width = pct(assigned);
+                document.getElementById('segRequested').style.width = pct(requested);
+
+                document.getElementById('lgDone').textContent = done;
+                document.getElementById('lgOngoing').textContent = ongoing;
+                document.getElementById('lgAssigned').textContent = assigned;
+                document.getElementById('lgRequested').textContent = requested;
+
+                // Category breakdown
+                const catMap = {};
+                issues.forEach(i => { catMap[i.category] = (catMap[i.category] || 0) + 1; });
+                const sortedCats = Object.entries(catMap).sort((a, b) => b[1] - a[1]);
+                const catEl = document.getElementById('catBreakdown');
+                catEl.innerHTML = sortedCats.map(([cat, cnt]) => {
+                    const barW = Math.round((cnt / total) * 100);
+                    return `
+                        <div>
+                            <div style="display:flex;justify-content:space-between;margin-bottom:.2rem;">
+                                <span style="color:var(--text-primary);">${cat}</span>
+                                <span style="font-weight:600;color:var(--primary-color);">${cnt}</span>
+                            </div>
+                            <div style="height:6px;background:var(--bg-color);border-radius:3px;overflow:hidden;">
+                                <div style="height:100%;width:${barW}%;background:var(--primary-color);border-radius:3px;transition:width .6s ease;"></div>
+                            </div>
+                        </div>`;
+                }).join('');
+
+                // Recent activity (last 5)
+                const recentFeed = document.getElementById('activityFeed');
+                const recent = issues.slice(0, 5);
+                const dotColor = (status) => {
+                    switch (status) {
+                        case 'Work done': return 'var(--success)';
+                        case 'Work on going': return 'var(--primary-color)';
+                        case 'Assigned personnel': return '#a78bfa';
+                        default: return 'var(--warning)';
+                    }
+                };
+                recentFeed.innerHTML = recent.map(r => `
+                    <div class="activity-item">
+                        <div class="activity-dot" style="background:${dotColor(r.status)};"></div>
+                        <div style="flex:1;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.25rem;">
+                                <strong style="font-size:.875rem;">${r.category}</strong>
+                                <span style="font-size:.75rem;color:var(--text-secondary);">${formatDate(r.date)}</span>
+                            </div>
+                            <div style="font-size:.8rem;color:var(--text-secondary);margin-top:.2rem;">${r.issue_number} &bull; ${r.location}</div>
+                        </div>
+                        <div>${formatStatus(r.status)}</div>
+                    </div>`).join('');
+
+            } catch {
+                document.getElementById('activityFeed').innerHTML =
+                    '<p style="color:var(--danger);">Failed to load data. Please refresh.</p>';
+            }
+        });
+    </script>
+</body>
+
+</html>

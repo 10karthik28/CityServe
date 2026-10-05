@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - CityServe</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 70px - 85px);
+            padding: 2rem;
+            background: radial-gradient(circle at top right, var(--surface-hover), var(--bg-color));
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 440px;
+            padding: 2rem;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.25rem;
+            border-radius: 8px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .role-btn.active {
+            background: var(--surface-color);
+            color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        .role-btn:hover:not(.active) {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="nav-brand">
+                <svg style="width: 28px; height: 28px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Kerala CityServe
+            </a>
+            <div class="nav-links">
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content login-wrapper">
+        <div class="card login-card animate-fade-in">
+            <div class="text-center mb-4">
+                <h1
+                    style="font-size: 2rem; margin-bottom: 0.5rem; background: linear-gradient(135deg, #e6edf3, #8b949e); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">
+                    CityServe Portal</h1>
+                <p style="margin-bottom: 0;">Sign in to continue</p>
+            </div>
+
+            <div class="role-selector">
+                <div class="role-btn active" data-role="user">Citizen</div>
+                <div class="role-btn" data-role="authority">Authority</div>
+            </div>
+
+            <form id="unifiedLoginForm">
+                <input type="hidden" id="loginRole" value="user">
+
+                <div class="form-group">
+                    <label class="form-label" for="username">Email Address or Full Name</label>
+                    <input type="text" id="username" name="username" class="form-control" required
+                        placeholder="email@example.com or your full name" autocomplete="username">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <input type="password" id="password" name="password" class="form-control" required
+                        placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;">
+                </div>
+
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; font-size: 0.875rem;">
+                    <label
+                        style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-secondary); cursor: pointer;">
+                        <input type="checkbox" style="accent-color: var(--primary-color);"> Remember me
+                    </label>
+                    <a href="forgot_password.html" style="color: var(--primary-color);">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-primary"
+                    style="width: 100%; padding: 0.875rem; font-size: 1rem; font-weight: 600;">Sign In</button>
+                <p id="loginError"
+                    style="display:none;color:var(--danger);font-size:.875rem;margin-top:.75rem;text-align:center;"></p>
+            </form>
+
+            <div class="text-center mt-4" id="registerPrompt">
+                <p style="font-size: 0.875rem; margin-bottom: 0;">Don't have an account? <a href="register.html"
+                        style="font-weight: 600;">Register here</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const roleBtns = document.querySelectorAll('.role-btn');
+            const loginRoleInput = document.getElementById('loginRole');
+            const registerPrompt = document.getElementById('registerPrompt');
+
+            roleBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    roleBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const role = btn.getAttribute('data-role');
+                    loginRoleInput.value = role;
+
+                    if (role === 'authority') {
+                        registerPrompt.style.display = 'none';
+                        document.getElementById('username').placeholder = "e.g. admin@kwa.kerala.gov.in";
+                    } else {
+                        registerPrompt.style.display = 'block';
+                        document.getElementById('username').placeholder = "example@email.com";
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

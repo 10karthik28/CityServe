@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Requests - CityServe</title>
+    <meta name="description" content="View all your submitted service requests and search by Request ID on CityServe.">
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .search-bar {
+            display: flex;
+            gap: .75rem;
+            align-items: center;
+        }
+
+        .search-bar input {
+            flex: 1;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .filter-tab {
+            padding: .3rem .9rem;
+            font-size: .8rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all .15s;
+        }
+
+        .filter-tab.active,
+        .filter-tab:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: #fff;
+        }
+
+        .request-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            transition: transform .15s, box-shadow .15s;
+        }
+
+        .request-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,.15);
+        }
+
+        .req-meta {
+            font-size: .78rem;
+            color: var(--text-secondary);
+            display: flex;
+            gap: .5rem;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-top: .3rem;
+        }
+
+        .inline-img {
+            max-width: 100%;
+            max-height: 180px;
+            border-radius: 8px;
+            margin-top: .75rem;
+            background: var(--bg-color);
+        }
+
+        .completion-img-wrap {
+            margin-top: .75rem;
+            padding: .75rem;
+            background: rgba(34,197,94,.06);
+            border: 1px solid rgba(34,197,94,.25);
+            border-radius: 8px;
+        }
+
+        .completion-img-wrap p {
+            font-size: .75rem;
+            color: var(--success);
+            margin-bottom: .4rem;
+            font-weight: 600;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        #requestList {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="/home.html" class="nav-brand">
+                <svg style="width: 24px; height: 24px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20">
+                    <path
+                        d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z">
+                    </path>
+                </svg>
+                CityServe
+            </a>
+            <div class="nav-links">
+                <a href="/dashboard.html" class="nav-link">My Dashboard</a>
+                <a href="/check_status.html" class="nav-link active">My Requests</a>
+                <a href="/request_service.html" class="nav-link">New Request</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container animate-fade-in">
+
+            <!-- Header -->
+            <div style="margin-bottom:2rem;">
+                <h2 style="margin-bottom:.25rem;">My Service Requests</h2>
+                <p style="color:var(--text-secondary);margin-bottom:0;">All requests you have submitted. Search by Request ID or filter by status.</p>
+            </div>
+
+            <!-- Search + Filter -->
+            <div class="card" style="margin-bottom:1.5rem;">
+                <div class="search-bar" id="searchBar">
+                    <svg style="width:18px;height:18px;color:var(--text-secondary);flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Search by Request ID (e.g. REQ-1042) or keyword…"
+                        style="margin-bottom:0;">
+                    <button id="clearSearch" class="btn btn-outline" style="padding:.45rem .9rem;font-size:.8rem;white-space:nowrap;">Clear</button>
+                </div>
+            </div>
+
+            <!-- Status filter tabs -->
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-status="all">All</button>
+                <button class="filter-tab" data-status="Requested to the authority">Requested</button>
+                <button class="filter-tab" data-status="Assigned personnel">Assigned</button>
+                <button class="filter-tab" data-status="Work on going">Ongoing</button>
+                <button class="filter-tab" data-status="Work done">Work Done</button>
+            </div>
+
+            <!-- Count -->
+            <div style="font-size:.8rem;color:var(--text-secondary);margin-bottom:1rem;" id="resultCount"></div>
+
+            <!-- Request list -->
+            <div id="requestList">
+                <p style="color:var(--text-secondary);">Loading…</p>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = await requireAuth(['user']);
+            if (!user) return;
+            updateNavbarAuth();
+
+            let allIssues = [];
+            let activeFilter = 'all';
+            let searchQuery = '';
+
+            const requestList = document.getElementById('requestList');
+            const resultCount = document.getElementById('resultCount');
+
+            const renderList = () => {
+                let filtered = allIssues;
+
+                // Apply status filter
+                if (activeFilter !== 'all') {
+                    filtered = filtered.filter(i => i.status === activeFilter);
+                }
+
+                // Apply search
+                if (searchQuery) {
+                    const q = searchQuery.toLowerCase();
+                    filtered = filtered.filter(i =>
+                        i.issue_number.toLowerCase().includes(q) ||
+                        i.category.toLowerCase().includes(q) ||
+                        i.description.toLowerCase().includes(q) ||
+                        i.location.toLowerCase().includes(q)
+                    );
+                }
+
+                resultCount.textContent = `Showing ${filtered.length} of ${allIssues.length} request${allIssues.length !== 1 ? 's' : ''}`;
+
+                if (filtered.length === 0) {
+                    requestList.innerHTML = `
+                        <div class="no-results">
+                            <svg style="width:48px;height:48px;margin:0 auto 1rem;display:block;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                            <p>No requests match your search or filter.</p>
+                            ${allIssues.length === 0
+                                ? `<a href="/request_service.html" class="btn btn-primary" style="margin-top:1rem;">Report an Issue</a>`
+                                : ''}
+                        </div>`;
+                    return;
+                }
+
+                requestList.innerHTML = filtered.map((req, idx) => {
+                    const canRate = req.status === 'Work done' && !req.has_feedback;
+                    const rateBtn = canRate
+                        ? `<a href="/rate_service.html?issue=${req.id}" class="btn btn-outline" style="padding:.25rem .6rem;font-size:.75rem;">Rate Service</a>`
+                        : '';
+
+                    const issueImg = req.image_url
+                        ? `<img src="${req.image_url}" alt="Issue Photo" class="inline-img">`
+                        : '';
+
+                    const completionImg = req.completion_image_url
+                        ? `<div class="completion-img-wrap">
+                                <p>✅ Completion Photo (uploaded by authority)</p>
+                                <img src="${req.completion_image_url}" alt="Completion Photo" class="inline-img">
+                           </div>`
+                        : '';
+
+                    return `
+                        <div class="request-card animate-fade-in" style="animation-delay:${idx * .04}s;">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;">
+                                <div>
+                                    <h3 style="margin-bottom:.15rem;font-size:1rem;">${req.category}</h3>
+                                    <div class="req-meta">
+                                        <strong>${req.issue_number}</strong>
+                                        <span>&bull;</span>
+                                        <span>${formatDate(req.date)}</span>
+                                        ${req.personnel ? `<span>&bull;</span><span>👷 ${req.personnel}</span>` : ''}
+                                    </div>
+                                </div>
+                                <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+                                    ${formatStatus(req.status)}
+                                    ${rateBtn}
+                                </div>
+                            </div>
+                            <p style="color:var(--text-primary);margin:.75rem 0 .5rem;font-size:.9rem;">${req.description}</p>
+                            <div style="font-size:.78rem;color:var(--text-secondary);display:flex;gap:.4rem;align-items:center;">
+                                <svg style="width:13px;height:13px;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                ${req.location}
+                            </div>
+                            ${issueImg}
+                            ${completionImg}
+                        </div>`;
+                }).join('');
+            };
+
+            // Load all requests
+            try {
+                const { issues } = await api('/api/issues');
+                allIssues = issues;
+                renderList();
+            } catch {
+                requestList.innerHTML = '<p style="color:var(--danger);">Failed to load requests. Please refresh.</p>';
+            }
+
+            // Search
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                searchQuery = e.target.value.trim();
+                renderList();
+            });
+
+            document.getElementById('clearSearch').addEventListener('click', () => {
+                document.getElementById('searchInput').value = '';
+                searchQuery = '';
+                renderList();
+            });
+
+            // Filters
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    activeFilter = tab.dataset.status;
+                    renderList();
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

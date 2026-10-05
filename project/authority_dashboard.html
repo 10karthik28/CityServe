@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authority Dashboard - CityServe</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <style>
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        th,
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        th {
+            background-color: var(--surface-hover);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 100%;
+            max-width: 500px;
+            padding: 2rem;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        /* Report modal is wider */
+        .modal-content.report-modal {
+            max-width: 800px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .report-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .stat-card h4 {
+            margin-bottom: 1rem;
+            font-size: .95rem;
+            color: var(--text-secondary);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: .4rem 0;
+            font-size: .875rem;
+        }
+
+        .stat-row span:last-child {
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="authority_dashboard.html" class="nav-brand">
+                <svg style="width: 28px; height: 28px; color: var(--primary-color);" fill="currentColor"
+                    viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                    <path fill-rule="evenodd"
+                        d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a1 1 0 110 2h-3a1 1 0 01-1-1v-2a1 1 0 00-1-1H9a1 1 0 00-1 1v2a1 1 0 01-1 1H4a1 1 0 110-2V4zm3 1h2v2H7V5zm2 4H7v2h2V9zm2-4h2v2h-2V5zm2 4h-2v2h2V9z"
+                        clip-rule="evenodd"></path>
+                </svg>
+                Kerala CityServe
+            </a>
+            <div class="nav-links">
+                <!-- Auto populated -->
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <div class="container animate-fade-in">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2.5rem;">
+                <div>
+                    <span class="badge badge-active mb-2" id="deptBadge">Department</span>
+                    <h2 style="margin-bottom: 0;">Authority Dashboard</h2>
+                    <p style="margin-bottom: 0;">Manage incoming public service requests for your department.</p>
+                </div>
+                <button id="reportBtn" class="btn btn-secondary" style="white-space:nowrap;">Generate Report</button>
+            </div>
+
+            <div class="card" style="padding: 0; overflow: hidden;">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Date</th>
+                                <th>Location</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Personnel</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="authorityTableBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Update Status/Personnel Modal -->
+    <div class="modal" id="actionModal">
+        <div class="modal-content animate-fade-in">
+            <button class="close-modal" id="closeModalBtn">&times;</button>
+            <h3 style="margin-bottom:0.25rem;">Update Request</h3>
+            <p id="modalReqId" style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1.5rem;"></p>
+
+            <div id="modalImageContainer" style="display:none; margin-bottom:1.5rem; text-align:center;">
+                <img id="modalImage" src="" alt="Issue Image"
+                    style="max-width:100%; max-height:250px; border-radius:6px; background:#f0f0f0;">
+            </div>
+
+            <form id="updateForm">
+                <input type="hidden" id="editRequestId">
+                <div class="form-group">
+                    <label class="form-label" for="updateStatus">Status</label>
+                    <select id="updateStatus" class="form-control">
+                        <option value="Requested to the authority">Requested to the authority</option>
+                        <option value="Assigned personnel">Assigned personnel</option>
+                        <option value="Work on going">Work on going</option>
+                        <option value="Work done">Work done</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="personnelSelect">Assign Personnel</label>
+                    <select id="personnelSelect" class="form-control">
+                        <option value="">— Unassigned —</option>
+                    </select>
+                </div>
+
+                <!-- Completion image — shown only when Work done is selected -->
+                <div id="completionImageGroup" class="form-group" style="display:none;">
+                    <label class="form-label" for="completionImage">Completion Photo</label>
+                    <input type="file" id="completionImage" class="form-control" accept="image/*"
+                        style="padding:.4rem .75rem;">
+                    <p style="font-size:.75rem;color:var(--text-secondary);margin-top:.35rem;">Upload a photo showing the finished condition (optional).</p>
+                    <div id="completionPreviewWrap" style="display:none;margin-top:.5rem;">
+                        <img id="completionPreview" src="" alt="Preview"
+                            style="max-width:100%;max-height:180px;border-radius:6px;border:1px solid var(--border-color);">
+                    </div>
+                </div>
+
+                <!-- Add new personnel inline -->
+                <details style="margin-bottom:1rem;">
+                    <summary style="cursor:pointer;font-size:.875rem;color:var(--text-secondary);list-style:none;">
+                        ＋ Add a new personnel member
+                    </summary>
+                    <div
+                        style="margin-top:.75rem;padding:.75rem;background:var(--bg-color);border-radius:6px;border:1px solid var(--border-color);">
+                        <div class="form-group" style="margin-bottom:.75rem;">
+                            <label class="form-label" style="font-size:.7rem;">Name</label>
+                            <input type="text" id="newPersonnelName" class="form-control" placeholder="e.g. Rajan Kumar"
+                                style="padding:.5rem .75rem;">
+                        </div>
+                        <div class="form-group" style="margin-bottom:.75rem;">
+                            <label class="form-label" style="font-size:.7rem;">Phone</label>
+                            <input type="tel" id="newPersonnelPhone" class="form-control" placeholder="e.g. 9876543210"
+                                style="padding:.5rem .75rem;" pattern="[1-9]{1}[0-9]{9}">
+                        </div>
+                        <button type="button" id="addPersonnelBtn" class="btn btn-secondary"
+                            style="width:100%;padding:.5rem;font-size:.8rem;">Add Personnel</button>
+                        <p id="addPersonnelError"
+                            style="display:none;color:var(--danger);font-size:.75rem;margin-top:.5rem;"></p>
+                    </div>
+                </details>
+
+                <button type="submit" class="btn btn-primary" style="width:100%;">Save Changes</button>
+                <p id="updateError"
+                    style="display:none;color:var(--danger);font-size:.875rem;margin-top:.5rem;text-align:center;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Report Modal -->
+    <div class="modal" id="reportModal">
+        <div class="modal-content report-modal animate-fade-in">
+            <button class="close-modal" id="closeReportBtn">&times;</button>
+            <h3 style="margin-bottom:0.25rem;">Department Report</h3>
+            <p id="reportDept" style="color:var(--text-secondary);font-size:.875rem;margin-bottom:1.5rem;"></p>
+
+            <div class="report-grid">
+                <div class="stat-card">
+                    <h4>This Month</h4>
+                    <div class="stat-row"><span>Total Issues</span><span id="rptMonthTotal">0</span></div>
+                    <div class="stat-row"><span>Resolved</span><span id="rptMonthResolved"
+                            style="color:var(--success);">0</span></div>
+                    <div class="stat-row"><span>Pending</span><span id="rptMonthPending"
+                            style="color:var(--warning);">0</span></div>
+                    <div class="stat-row"><span>Avg Rating</span><span id="rptMonthRating">—</span></div>
+                    <div class="stat-row"><span>Feedback Count</span><span id="rptMonthFbCount">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <h4>All Time</h4>
+                    <div class="stat-row"><span>Total Issues</span><span id="rptAllTotal">0</span></div>
+                    <div class="stat-row"><span>Resolved</span><span id="rptAllResolved"
+                            style="color:var(--success);">0</span></div>
+                    <div class="stat-row"><span>Pending</span><span id="rptAllPending"
+                            style="color:var(--warning);">0</span></div>
+                    <div class="stat-row"><span>Avg Rating</span><span id="rptAllRating">—</span></div>
+                    <div class="stat-row"><span>Feedback Count</span><span id="rptAllFbCount">0</span></div>
+                </div>
+            </div>
+
+            <h4 style="margin-bottom:.75rem;">Personnel</h4>
+            <div id="rptPersonnel" style="margin-bottom:1.5rem;font-size:.875rem;"></div>
+
+            <h4 style="margin-bottom:.75rem;">Recent Issues</h4>
+            <div class="table-responsive" style="max-height:300px;overflow-y:auto;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Personnel</th>
+                            <th>Rating</th>
+                            <th>Feedback</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rptIssuesBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Kerala Municipal Service Request System. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            let authUser;
+            try {
+                const { user } = await api('/api/auth/me');
+                if (!user || user.role !== 'authority') { window.location.href = '/'; return; }
+                authUser = user;
+            } catch { window.location.href = '/'; return; }
+
+            updateNavbarAuth();
+
+            document.getElementById('deptBadge').textContent = authUser.department;
+
+            let personnelList = [];
+            let displayedIssues = [];
+
+            const loadPersonnel = async () => {
+                try {
+                    const { personnel } = await api('/api/authority/personnel');
+                    personnelList = personnel;
+                    const sel = document.getElementById('personnelSelect');
+                    while (sel.options.length > 1) sel.remove(1);
+                    personnel.forEach(p => {
+                        const opt = document.createElement('option');
+                        opt.value = p.id;
+                        opt.textContent = `${p.name} — ${p.phone}`;
+                        sel.appendChild(opt);
+                    });
+                } catch { /* silent */ }
+            };
+
+            const renderTable = (issues) => {
+                displayedIssues = issues;
+                const tbody = document.getElementById('authorityTableBody');
+                if (!issues || issues.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center" style="padding:2rem;color:var(--text-secondary);">No requests found for this department.</td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = issues.map(r => `
+                <tr>
+                    <td><strong style="font-size:.85rem;">${r.issue_number}</strong></td>
+                    <td style="color:var(--text-secondary);font-size:.8rem;">${formatDate(r.date)}</td>
+                    <td><div style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.location}">${r.location}</div></td>
+                    <td><div style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;" title="${r.description}">${r.description}</div></td>
+                    <td>${formatStatus(r.status)}</td>
+                    <td><span style="font-size:.8rem;color:var(--text-secondary);">${r.personnel || '—'}</span></td>
+                    <td><button class="btn btn-outline edit-btn" data-id="${r.id}" style="padding:.2rem .5rem;font-size:.75rem;">Manage</button></td>
+                </tr>`).join('');
+
+                tbody.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', () => openModal(+btn.dataset.id));
+                });
+            };
+
+            const loadIssues = async () => {
+                try {
+                    const { issues } = await api('/api/authority/issues');
+                    renderTable(issues);
+                } catch {
+                    document.getElementById('authorityTableBody').innerHTML =
+                        `<tr><td colspan="7" style="padding:2rem;text-align:center;color:var(--danger);">Failed to load requests. Please refresh.</td></tr>`;
+                }
+            };
+
+            const modal = document.getElementById('actionModal');
+
+            const openModal = async (id) => {
+                const issue = displayedIssues.find(r => r.id === id);
+                if (!issue) return;
+                await loadPersonnel();
+
+                document.getElementById('editRequestId').value = issue.id;
+                document.getElementById('modalReqId').textContent = `${issue.issue_number} — ${issue.location}`;
+
+                const imgContainer = document.getElementById('modalImageContainer');
+                const imgEl = document.getElementById('modalImage');
+                if (issue.image_url) {
+                    imgEl.src = issue.image_url;
+                    imgContainer.style.display = 'block';
+                } else {
+                    imgContainer.style.display = 'none';
+                }
+
+                document.getElementById('updateStatus').value = issue.status;
+                document.getElementById('personnelSelect').value = issue.personnel_id || '';
+                document.getElementById('updateError').style.display = 'none';
+                // Reset completion image field
+                document.getElementById('completionImage').value = '';
+                document.getElementById('completionPreviewWrap').style.display = 'none';
+                // Show/hide completion image group based on current status
+                const cig = document.getElementById('completionImageGroup');
+                cig.style.display = issue.status === 'Work done' ? 'block' : 'none';
+                // Existing completion image
+                if (issue.completion_image_url) {
+                    const prev = document.getElementById('completionPreview');
+                    prev.src = issue.completion_image_url;
+                    document.getElementById('completionPreviewWrap').style.display = 'block';
+                }
+                modal.classList.add('active');
+            };
+
+            document.getElementById('closeModalBtn').addEventListener('click', () => {
+                modal.classList.remove('active');
+            });
+
+
+            // Show/hide completion image group when status changes
+            document.getElementById('updateStatus').addEventListener('change', (e) => {
+                const cig = document.getElementById('completionImageGroup');
+                cig.style.display = e.target.value === 'Work done' ? 'block' : 'none';
+                if (e.target.value !== 'Work done') {
+                    document.getElementById('completionImage').value = '';
+                    document.getElementById('completionPreviewWrap').style.display = 'none';
+                }
+            });
+
+            // Preview selected completion image
+            document.getElementById('completionImage').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                const wrap = document.getElementById('completionPreviewWrap');
+                const prev = document.getElementById('completionPreview');
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = ev => { prev.src = ev.target.result; wrap.style.display = 'block'; };
+                    reader.readAsDataURL(file);
+                } else {
+                    wrap.style.display = 'none';
+                }
+            });
+
+            document.getElementById('updateForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const id = +document.getElementById('editRequestId').value;
+                const status = document.getElementById('updateStatus').value;
+                const personnel_id = document.getElementById('personnelSelect').value;
+                const completionFile = document.getElementById('completionImage').files[0];
+
+                try {
+                    if (status === 'Work done' && completionFile) {
+                        const fd = new FormData();
+                        fd.append('status', status);
+                        if (personnel_id) fd.append('personnel_id', personnel_id);
+                        fd.append('completion_image', completionFile);
+                        await api(`/api/authority/issues/${id}`, 'PUT', fd);
+                    } else {
+                        await api(`/api/authority/issues/${id}`, 'PUT', {
+                            status,
+                            personnel_id: personnel_id ? +personnel_id : null
+                        });
+                    }
+                    modal.classList.remove('active');
+                    await loadIssues();
+                } catch (err) {
+                    const errEl = document.getElementById('updateError');
+                    errEl.textContent = err.error || 'Failed to save changes.';
+                    errEl.style.display = 'block';
+                }
+            });
+
+            document.getElementById('addPersonnelBtn').addEventListener('click', async () => {
+                const name = document.getElementById('newPersonnelName').value.trim();
+                const phone = document.getElementById('newPersonnelPhone').value.trim();
+                const errEl = document.getElementById('addPersonnelError');
+                errEl.style.display = 'none';
+
+                if (!name || !phone) {
+                    errEl.textContent = 'Name and phone are both required.';
+                    errEl.style.display = 'block';
+                    return;
+                }
+                try {
+                    await api('/api/authority/personnel', 'POST', { name, phone });
+                    document.getElementById('newPersonnelName').value = '';
+                    document.getElementById('newPersonnelPhone').value = '';
+                    await loadPersonnel();
+                } catch (err) {
+                    errEl.textContent = err.error || 'Could not add personnel.';
+                    errEl.style.display = 'block';
+                }
+            });
+
+            const reportModal = document.getElementById('reportModal');
+            document.getElementById('reportBtn').addEventListener('click', async () => {
+                try {
+                    const data = await api('/api/authority/report');
+                    document.getElementById('reportDept').textContent = `${data.department} — ${data.category}`;
+
+                    document.getElementById('rptMonthTotal').textContent = data.this_month.total;
+                    document.getElementById('rptMonthResolved').textContent = data.this_month.resolved;
+                    document.getElementById('rptMonthPending').textContent = data.this_month.pending;
+                    document.getElementById('rptMonthRating').textContent = data.this_month.avg_rating ? data.this_month.avg_rating + '/5' : '—';
+                    document.getElementById('rptMonthFbCount').textContent = data.this_month.feedback_count;
+
+                    document.getElementById('rptAllTotal').textContent = data.all_time.total;
+                    document.getElementById('rptAllResolved').textContent = data.all_time.resolved;
+                    document.getElementById('rptAllPending').textContent = data.all_time.pending;
+                    document.getElementById('rptAllRating').textContent = data.all_time.avg_rating ? data.all_time.avg_rating + '/5' : '—';
+                    document.getElementById('rptAllFbCount').textContent = data.all_time.feedback_count;
+
+                    const pEl = document.getElementById('rptPersonnel');
+                    if (data.personnel.length === 0) {
+                        pEl.innerHTML = '<p style="color:var(--text-secondary);">No personnel added yet.</p>';
+                    } else {
+                        pEl.innerHTML = data.personnel.map(p =>
+                            `<span class="badge" style="margin:.2rem;">${p.name} — ${p.phone}</span>`
+                        ).join(' ');
+                    }
+
+                    const tbody = document.getElementById('rptIssuesBody');
+                    if (data.recent_issues.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="color:var(--text-secondary);">No issues yet.</td></tr>';
+                    } else {
+                        tbody.innerHTML = data.recent_issues.map(r => `
+                            <tr>
+                                <td style="font-size:.8rem;font-weight:600;">${r.issue_number}</td>
+                                <td style="font-size:.8rem;color:var(--text-secondary);">${formatDate(r.issue_date)}</td>
+                                <td>${formatStatus(r.status)}</td>
+                                <td style="font-size:.8rem;">${r.personnel_name || '—'}</td>
+                                <td style="font-size:.8rem;">${r.rating ? r.rating + '/5' : '—'}</td>
+                                <td style="font-size:.8rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.feedback_comment || ''}">${r.feedback_comment || '—'}</td>
+                            </tr>`).join('');
+                    }
+
+                    reportModal.classList.add('active');
+                } catch (err) {
+                    alert(err.error || 'Failed to generate report.');
+                }
+            });
+
+            document.getElementById('closeReportBtn').addEventListener('click', () => {
+                reportModal.classList.remove('active');
+            });
+            await Promise.all([loadIssues(), loadPersonnel()]);
+        });
+    </script>
+</body>
+
+</html>
